@@ -90,7 +90,7 @@ jobs:
           #  and 'upstream' will point to the same repository, which is fine.)
 
           echo "---add upstream remote---";
-          git remote add upstream "git@github.com:${{ github.event.pull_request.base.user.login }}/${{ github.event.repository.name }}.git";
+          git remote add upstream "https://github.com/${{ github.event.pull_request.base.user.login }}/${{ github.event.repository.name }}.git";
           git remote -v
 
           echo "---fetch upstream base branch---";
