@@ -3,7 +3,7 @@ on:
   # use pull_request_target instead of pull_request to allow pushes to PR branch
   pull_request_target:
     branches:
-      - main
+      - main-next
     paths:
       - 'notebooks/*/*.ipynb' # in jdat_notebooks
       - 'nb_zone/*' # in proof-of-concept
