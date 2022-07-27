@@ -30,53 +30,53 @@ except Exception as err:
 
 # create a separating line for the script file with unique text, like:
 # #################################flake-8-check################################
-signature = 'flake-8-check'
-fill_0 = 39 - np.floor(len(signature) / 2).astype(int)
-fill_1 = 39 - np.ceil(len(signature) / 2).astype(int)
+identifier = 'flake-8-check'
+line_length = 80
+fill_0 = (line_length // 2 - 1) - np.floor(len(identifier) / 2).astype(int)
+fill_1 = (line_length // 2 - 1) - np.ceil(len(identifier) / 2).astype(int)
 
-separator = '# ' + '#' * fill_0 + signature + '#' * fill_1
+separator = '# ' + '#' * fill_0 + identifier + '#' * fill_1
 
 # save relevant file paths
 code_file = pathlib.Path(f"{nb_file.stem}_scripted.py")
 warn_file = pathlib.Path(f"{nb_file.stem}_pep8.txt")
-flake8_file = pathlib.Path(".github/helpers/run_flake8.sh")
+nb_magic_file = pathlib.Path(".github/helpers/nb_flake8_magic.json")
 
-# save code cell contents to a script, dividing in blocks with the separator
+# save code cell contents to a script divided into blocks with the separator
 code_cells = []
-with open(nb_file) as f1:
-    og_nb = json.load(f1)
+with open(nb_file) as nf:
+    og_nb = json.load(nf)
 
-    with open(code_file, 'w') as f2:
+    with open(code_file, 'w') as cf:
         for i, cl in enumerate(og_nb['cells']):
             if cl['cell_type'] == 'code':
                 code_cells.append(i)
                 for o in cl['source']:
-                    f2.write(o)
-                f2.write('\n' * 2)
-                f2.write(separator)
-                f2.write('\n') # important, file's end must be one blank line
+                    cf.write(o)
+                cf.write('\n' * 2)
+                cf.write(separator)
+                cf.write('\n') # important, file's end must be one blank line
 
-# run flake8 and save the results to a new file
-# https://stackoverflow.com/a/31995784
-subprocess.call(shlex.split(f"sh {flake8_file} {code_file} {warn_file}"))
+# without spawning a shell, run flake8 and save any PEP8 warnings to a new file
+with open(warn_file, 'w') as wf:
+  subprocess.run(['flake8', '--ignore', 'E261,E501,W291,W293', code_file],
+                 stdout=wf)
 
 # read in the PEP8 warnings
-with open(warn_file) as f3:
-    warns = f3.readlines()
+with open(warn_file) as wf:
+    warns = wf.readlines()
 
 # if there are none, QUIT while we're ahead
 if not warns:
     print(f"{nb_file} is clean!")
     sys.exit()
 
-# read in the script and find the lines that function as cell borders
-with open(code_file) as f4:
-    script = f4.readlines()
+# else, read in the script and find the lines that function as cell borders
+with open(code_file) as cf:
+    script = cf.readlines()
 
-borderlines = []
-for j, ll in enumerate(script):
-    if re.search(fr"#+{signature}#+", ll):
-        borderlines.append(j)
+borderlines = [j for j, ll in enumerate(script)
+               if re.search(fr"#+{identifier}#+", ll)]
 
 # customize the beginning of each PEP8 warning
 pre = dt.now(pytz.timezone("America/New_York")).strftime('%Y-%m-%d %H:%M:%S - INFO - ')
@@ -109,7 +109,8 @@ for w in warns:
     nu_msg = pre + re.sub(r':\d+(?=:)', line_in_cell, w, count=1)
 
     # update the defaultdict
-    nu_output_dict[all_cell_num].update({'name': 'stderr', 'output_type': 'stream'})
+    nu_output_dict[all_cell_num].update({'name': 'stderr',
+                                         'output_type': 'stream'})
     nu_output_dict[all_cell_num]['text'].append(nu_msg)
 
 # use the defaultdict's keys to learn which cells require warnings
@@ -129,46 +130,8 @@ for num, cell in enumerate(injected_nb['cells']):
 
 # insert cells for enabling interactive PEP8 feedback just above first code cell
 # if they aren't already present
-flake8_magic_cells = [{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "<p style=\"font-size:200%; color:#e56020; background-color:#1d1160;\"><b><i>Reviewer note:</i> Begin PEP8 check cells (delete below when finished)</b></p>"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": None,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# disable all imported packages' loggers\n",
-    "import logging\n",
-    "logging.root.manager.loggerDict = {}"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": None,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# enable PEP8 checker for this notebook\n",
-    "%load_ext pycodestyle_magic\n",
-    "%flake8_on --ignore E261,E501,W291,W293\n",
-    "\n",
-    "# only allow the checker to throw warnings when there's a violation\n",
-    "logging.getLogger('flake8').setLevel('ERROR')\n",
-    "logging.getLogger('stpipe').setLevel('ERROR')"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "<p style=\"font-size:200%; color:#e56020; background-color:#1d1160;\"><b><i>Reviewer note:</i> Begin PEP8 check cells (delete above when finished)</b></p>"
-   ]
-  }]
+with open(nb_magic_file) as nmf:
+  flake8_magic_cells = json.load(nmf)['cells']
 
 if all([og_nb['cells'][i].get('source') != flake8_magic_cells[0]['source']
         for i in code_cells]):
