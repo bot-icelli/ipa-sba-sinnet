@@ -72,7 +72,7 @@ jobs:
           echo ${{ github.event.sender.login }}
 
       - name: Check out PR branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}}
           ref: ${{ github.event.pull_request.head.ref }}
@@ -137,7 +137,7 @@ jobs:
 
       - name: Auto-fail if changed files are not in same directory
         if: env.one_dir
-        uses: actions/github-script@v3 # currently on v5
+        uses: actions/github-script@v5
         with:
           script: |
             core.setFailed('All changed files are not in the same directory.')
@@ -149,7 +149,7 @@ jobs:
           cache: 'pip'
 
       - name: Cache installs
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache-step
         with:
           path: ~/.cache/pip
@@ -280,6 +280,6 @@ jobs:
 
       - name: Auto-fail if changes were pushed
         if: env.push
-        uses: actions/github-script@v3 # currently on v5
+        uses: actions/github-script@v5
         with:
           script: core.setFailed('Notebook(s) failed PEP8 tests.')
