@@ -143,7 +143,7 @@ jobs:
             core.setFailed('All changed files are not in the same directory.')
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8 # JDAT recommends 3.8.10
           cache: 'pip'
