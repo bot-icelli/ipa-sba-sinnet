@@ -14,6 +14,7 @@ on:
 
 env:
   pep8_script: '.github/helpers/pep8_nb_checker.py'
+  magic_cells: '.github/helpers/nb_flake8_magic.json'
   bot_name: 'github-actions[bot]' # still must set this manually in conditional
   bot_email: '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -148,6 +149,11 @@ jobs:
 
       - name: Run the PEP8 check's Python script
         run: |
+          # ensure script's helper files come from the base branch, not the PR
+          # (checkout also works, though you have to unstage the file afterward)
+
+          git restore --source=upstream/${{ github.event.pull_request.base.ref }} --worktree $pep8_script $magic_cells
+
           # isolate changed notebooks in order to run PEP8 check
 
           for ff in ${{ env.changed_files }}; do
@@ -170,12 +176,12 @@ jobs:
           git config --local user.name $bot_name
 
           # add the changed notebook(s)
-          git add --update
-          # seems safe; only NBs are modified. script output files are untracked
+          git add --update *.ipynb
           git status
+          # (script output files should be untracked)
 
           # list changed notebooks in commit message; push the changes
-          git_diff_new=($(git diff --name-only --diff-filter=M HEAD))
+          git_diff_new=($(git diff --name-only --diff-filter=M *ipynb))
           git commit -m "[BOT] Left PEP8 feedback on PR #${{ github.event.number }}'s notebooks" -m "Files: $(printf '%s\n' $git_diff_new)"
           # (is tagging the PR for the best here?)
 
