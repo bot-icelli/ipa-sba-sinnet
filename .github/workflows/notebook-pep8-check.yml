@@ -14,7 +14,6 @@ on:
 
 env:
   pep8_script: '.github/helpers/pep8_nb_checker.py'
-  flake8_runner: '.github/helpers/run_flake8.sh'
   bot_name: 'github-actions[bot]' # still must set this manually in conditional
   bot_email: '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -185,9 +184,6 @@ jobs:
 
       - name: Run the PEP8 check's Python script
         run: |
-          # make flake8 sh file executable
-          chmod +x ${{ env.flake8_runner }}
-
           # isolate changed notebooks in order to run PEP8 check
 
           for ff in ${{ env.changed_files }}; do
