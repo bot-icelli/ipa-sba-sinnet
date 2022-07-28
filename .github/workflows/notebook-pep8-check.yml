@@ -128,12 +128,6 @@ jobs:
 
           if [ "${#changed_dirs_uniq[@]}" != 1 ]; then echo "one_dir=no" >> $GITHUB_ENV; fi
 
-          # save requirements-like files from that directory
-          req_files=($(find ${changed_dirs_uniq[0]} -name '*requirements.txt'))
-          echo "req_files"
-          echo "${req_files[@]}"
-          echo "req_files=${req_files[@]}" >> $GITHUB_ENV
-
       - name: Auto-fail if changed files are not in same directory
         if: env.one_dir
         uses: actions/github-script@v5
@@ -145,42 +139,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.8 # JDAT recommends 3.8.10
-          cache: 'pip'
 
-      - name: Cache installs
-        uses: actions/cache@v3
-        id: cache-step
-        with:
-          path: ~/.cache/pip
-          key: testy # must be unique to *current* reqs state of *current* PR
-          # installs are only cached on successful workflow runs, but quick
-          # execution matters most when this workflow fails and the user is
-          # trying to troubleshoot... any workarounds?
-
-      - name: Install flake8 and Python dependencies
+      - name: Install flake8 and script dependencies
         if: steps.cache-step.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install flake8 numpy
-          # (need numpy for the script; requirements can correct ver. # later)
-
-          # install requirements files in order (hopefully)
-          # https://stackoverflow.com/a/229606
-
-          for ff in ${{ env.req_files }}; do
-            if [[ $ff == *"pre-requirements.txt" ]]; then
-              echo "---installing from $ff---";
-              pip install -r $ff
-            fi
-          done
-
-          for ff in ${{ env.req_files }}; do
-            if [[ $ff == *"requirements.txt" ]] && \\
-            [[ $ff != *"pre-requirements.txt" ]]; then
-              echo "---installing from $ff---";
-              pip install -r $ff
-            fi
-          done
 
       - name: Run the PEP8 check's Python script
         run: |
