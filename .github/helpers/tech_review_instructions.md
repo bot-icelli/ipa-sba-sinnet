@@ -1,4 +1,4 @@
-Hello @%s,
+Hola @%s,
 
 Thank you for submitting these changes to your notebook. Please read on for your technical review instructions.
 
