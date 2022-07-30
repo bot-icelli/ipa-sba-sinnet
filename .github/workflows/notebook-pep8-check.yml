@@ -15,6 +15,7 @@ on:
 env:
   pep8_script: '.github/helpers/pep8_nb_checker.py'
   magic_cells: '.github/helpers/nb_flake8_magic.json'
+  instruct_post: '.github/helpers/tech_review_instructions.md'
   bot_name: 'github-actions[bot]' # still must set this manually in conditional
   bot_email: '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -152,7 +153,7 @@ jobs:
           # ensure script's helper files come from the base branch, not the PR
           # (checkout also works, though you have to unstage the file afterward)
 
-          git restore --source=upstream/${{ github.event.pull_request.base.ref }} --worktree $pep8_script $magic_cells
+          git restore --source=upstream/${{ github.event.pull_request.base.ref }} --worktree $pep8_script $magic_cells $instruct_post
 
           # isolate changed notebooks in order to run PEP8 check
 
