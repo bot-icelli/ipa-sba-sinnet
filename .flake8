@@ -1,0 +1,6 @@
+[flake8]
+# E261: two spaces before inline comment
+# E501: line length >79 characters
+# W291: trailing whitespace
+# W293: blank line contains whitespace
+extend-ignore = E261,E501,W291,W293

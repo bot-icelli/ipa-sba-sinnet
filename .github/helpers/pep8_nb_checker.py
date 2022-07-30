@@ -58,8 +58,8 @@ with open(nb_file) as nf:
 
 # without spawning a shell, run flake8 and save any PEP8 warnings to a new file
 with open(warn_file, 'w') as wf:
-  subprocess.run(['flake8', '--extend-ignore', 'E261,E501,W291,W293', code_file],
-                 stdout=wf)
+  # flake8's command line options are specified in base repo folder's .flake8
+  subprocess.run(['flake8', code_file], stdout=wf)
 
 # read in the PEP8 warnings
 with open(warn_file) as wf:
