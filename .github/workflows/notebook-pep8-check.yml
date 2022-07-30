@@ -128,7 +128,7 @@ jobs:
           echo "changed_dir_suniq"
           echo "${changed_dirs_uniq[@]}"
 
-          if [ "${#changed_dirs_uniq[@]}" != 1 ]; then echo "one_dir=no" >> $GITHUB_ENV; fi
+          # if [ "${#changed_dirs_uniq[@]}" != 1 ]; then echo "one_dir=no" >> $GITHUB_ENV; fi
 
       - name: Auto-fail if changed files are not in same directory
         if: env.one_dir
