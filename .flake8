@@ -1,4 +1,5 @@
 [flake8]
+# (use extend-ignore over ignore to keep behavior consistent for users/actions)
 # E261: two spaces before inline comment
 # E501: line length >79 characters
 # W291: trailing whitespace
